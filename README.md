@@ -1,1 +1,1 @@
-# Product-Inventory-Management
+# Skeleton project for Swagger
