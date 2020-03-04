@@ -62,7 +62,7 @@ async function updateProductsAssociatedToCart(updatedCart, isCreate) {
     });
 
     const newProductsUpdated = await handleNewProducts(newProducts, currCart, notUpdated, productsNotFound);
-
+    const deletedRemaining = await handleDeletedProducts(currCart);
     if (allItemsParsed && newProductsUpdated) {//will always be true,will be executed after all items parsed
         if (notUpdated.length === updatedCart.cartItems.length) {
             return { notUpdated: true }
@@ -74,6 +74,26 @@ async function updateProductsAssociatedToCart(updatedCart, isCreate) {
         };
     }
 }
+
+handleDeletedProducts(currCart){
+    return new Promise((resolve, reject) => {
+        const deleted = currCart.cartItems.filter(p => !p.touched);
+        let count = 0;
+        deleted.forEach(p => {
+            productModel.findOne({ _id: p._id }).then(pDoc => {
+                let doc = pDoc._doc;
+                doc.stockQuantity+=(deleted.quantity ||0);
+                productModel.updateOne({_id:doc._id},doc).then(r=>{
+                    count++;
+                    if(count===deleted.length){
+                        resolve(true);
+                    }
+                });
+            });
+        });
+    });
+}
+
 
 
 handleNewProducts(newProducts, currCart, notUpdated, productsNotFound){
