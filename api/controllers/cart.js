@@ -19,13 +19,10 @@ function updateCart(req, res) {
 }
 
 var postProductUpdate = (req, res, messages) => {
-    if(messages.notUpdated){
-        res.json({
-            message: 'nothing updated'
-        });
-        return;
-    }
+    const bodyToPut = messages.updatedCart;
+    
     const id = mongoose.Types.ObjectId(req.swagger.params.cartId.value);
+    bodyToPut._id = id
     cartModel.updateOne({ _id: id }, req.body).then(result => {
         res.json({
             message: 'cart updated successfully',
@@ -40,7 +37,10 @@ var postProductUpdate = (req, res, messages) => {
 
 var postProductUpdateCreateCart = (req, res, messages) => {
     // utils.makeProductIdsAsObjectId(req.body);
-    cartModel.create(req.body).then(result => {
+
+    const bodyToPost = messages.updatedCart;
+    // bodyToPost._id = req.body._id;
+    cartModel.create(bodyToPost).then(result => {
         res.json({
             message: 'cart created successfully'
         })
