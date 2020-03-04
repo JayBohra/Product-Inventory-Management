@@ -6,9 +6,15 @@ const mongoose = require('mongoose');
 async function updateProductsAssociatedToCart(updatedCart, isCreate) {
     let currCart, newProducts = [],notUpdated = [];
     let successes = [], errors = {};
-
+if(!isCreate){
     currCart = await cartModel.findById(mongoose.Types.ObjectId(updatedCart._id));
     currCart = currCart._doc;
+}else{
+currCart = {
+    cartItems:[]
+}
+}
+    
     // cartModel.model.findOne({_id:mongoose.Types.ObjectId(updatedCart._id)}).then(e=>{debugger;console.log('s',e)}).catch(e=>console.log('e',e))
     // cartModel.findOne({_id:mongoose.Types.ObjectId(updatedCart._id)}).exec().then(e=>{debugger;console.log('s',e)}).catch(e=>console.log('e',e))
     // cartModel.findOne(mongoose.Types.ObjectId(updatedCart._id)).then(e=>{console.log('so',e)}).catch(e=>console.log('eo',e))
