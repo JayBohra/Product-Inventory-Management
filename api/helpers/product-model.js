@@ -1,6 +1,6 @@
 const mongoose= require('mongoose');
 const Schema = mongoose.Schema;
-const idGenerator = require("./idGenerator");
+// const idGenerator = require("./idGenerator");
 
 
 var productSchema = new Schema({

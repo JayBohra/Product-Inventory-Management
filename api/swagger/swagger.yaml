@@ -125,6 +125,56 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
 
+  /cart:
+    x-swagger-router-controller: cart
+    post:
+      operationId: createCart
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema: 
+            $ref: "#/definitions/CartData"
+      responses: 
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SuccessResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /cart/{cartId}:
+    x-swagger-router-controller: cart
+    put:
+      operationId: updateCart
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema: 
+            $ref: "#/definitions/CartData"
+        - name: cartId
+          in: path
+          required: true
+          type: string
+      responses: 
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SuccessResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+    
+
 # complex objects have schema definitions
 definitions:
   HelloWorldResponse:
@@ -135,16 +185,27 @@ definitions:
         type: string
 
   ProductData:
-    type: array
-    items:
-      required:
-        - name
-        - price
-        - stockQuantity
-      properties:
-        name: {type: string}
-        price: {type: number}
-        stockQuantity: {type: number}
+    required:
+      - name
+      - price
+      - stockQuantity
+    properties:
+      name: {type: string}
+      price: {type: number}
+      stockQuantity: {type: number}
+
+  CartData:
+    properties:
+      cartItems:
+        type: array
+        items:
+          required:
+            - productId
+            - quantity
+          properties:
+            productId: {type: string}
+            quantity: {type: number}
+
 
   ErrorResponse:
     properties:
