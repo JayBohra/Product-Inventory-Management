@@ -28,10 +28,11 @@ var postProductUpdate = (req, res, messages) => {
     const id = mongoose.Types.ObjectId(req.swagger.params.cartId.value);
     cartModel.updateOne({ _id: id }, req.body).then(result => {
         res.json({
-            message: 'cart updated successfully'
+            message: 'cart updated successfully',
+            additional: messages
         });
     }).catch((err) => {
-        res.json({
+        res.status(400).json({
             message: 'error while updating cart'
         });
     });
@@ -44,7 +45,7 @@ var postProductUpdateCreateCart = (req, res, messages) => {
             message: 'cart created successfully'
         })
     }).catch((err) => {
-        res.json({
+        res.status(400).json({
             message: 'error while creating cart'
         })
     });

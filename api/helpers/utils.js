@@ -4,17 +4,17 @@ const mongoose = require('mongoose');
 
 
 async function updateProductsAssociatedToCart(updatedCart, isCreate) {
-    let currCart, newProducts = [],notUpdated = [];
+    let currCart, newProducts = [], notUpdated = [], productNotFound = [];
     let successes = [], errors = {};
-if(!isCreate){
-    currCart = await cartModel.findById(mongoose.Types.ObjectId(updatedCart._id));
-    currCart = currCart._doc;
-}else{
-currCart = {
-    cartItems:[]
-}
-}
-    
+    if (!isCreate) {
+        currCart = await cartModel.findById(mongoose.Types.ObjectId(updatedCart._id));
+        currCart = currCart._doc;
+    } else {
+        currCart = {
+            cartItems: []
+        }
+    }
+
     // cartModel.model.findOne({_id:mongoose.Types.ObjectId(updatedCart._id)}).then(e=>{debugger;console.log('s',e)}).catch(e=>console.log('e',e))
     // cartModel.findOne({_id:mongoose.Types.ObjectId(updatedCart._id)}).exec().then(e=>{debugger;console.log('s',e)}).catch(e=>console.log('e',e))
     // cartModel.findOne(mongoose.Types.ObjectId(updatedCart._id)).then(e=>{console.log('so',e)}).catch(e=>console.log('eo',e))
@@ -48,10 +48,10 @@ currCart = {
                                 resolve(true);
                             }
                         });
-                }else {
+                } else {
                     count++;
                     notUpdated.push(currItem);
-                    if(count === updatedCart.cartItems.length){
+                    if (count === updatedCart.cartItems.length) {
                         resolve(true);
                     }
                 }
@@ -60,18 +60,49 @@ currCart = {
             }
         });
     });
-    
 
-    if (allItemsParsed) {//will always be true,will be executed after all items parsed
-        if(notUpdated.length === updatedCart.cartItems.length){
-            return {notUpdated:true}
+    const newProductsUpdated = await handleNewProducts(newProducts, currCart, notUpdated, productsNotFound);
+
+    if (allItemsParsed && newProductsUpdated) {//will always be true,will be executed after all items parsed
+        if (notUpdated.length === updatedCart.cartItems.length) {
+            return { notUpdated: true }
         }
         return {
             successes,
             errors,
+            notUpdated
         };
     }
 }
+
+
+handleNewProducts(newProducts, currCart, notUpdated, productsNotFound){
+    return new Promise((resolve, reject) => {
+        newProducts.forEach(product => {
+            const product0 = {
+                quantity: 0,
+                _id: product._id
+            }
+            updateProduct(product0, product)
+                .then(r => {
+                    if (!currCart.cartItems.find(e => e.productId.toString() === product._id.toString())) {
+                        currCart.cartItems.push({
+                            productId: product._id,
+                            quantity: product.quantity
+                        })
+                    }
+
+                }).catch(e => {
+                    productNotFound.push(product);
+                    const index = currCart.cartItems.findIndex(e => e.productId.toString() === product._id.toString());
+                    if (index !== -1) {
+                        currCart.cartItems.splice(index, 1);
+                    }
+                })
+        });
+    });
+}
+
 
 function makeProductIdsAsObjectId(body) {
     body.cartItems.forEach(product => {
@@ -100,7 +131,10 @@ function updateProduct(currItem, updatedItem) {
 
             if (canBeUpdated) {
                 productModel.updateOne({ _id: product._id }, product)
-                    .then(result => { debugger; resolve('success') })
+                    .then(result => {
+                        resolve('success');
+
+                    })
                     .catch(err => { debugger; reject('mongo_error') });
             } else {
                 reject('cannot_be_updated');
@@ -108,6 +142,7 @@ function updateProduct(currItem, updatedItem) {
         }).catch(err => reject('mongo_error'));
     });
 }
+
 
 module.exports = {
     updateProductsAssociatedToCart,
