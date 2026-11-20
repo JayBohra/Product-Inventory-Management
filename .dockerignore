@@ -7,3 +7,7 @@
 **/.vscode
 **/*.log
 backend/src/main/resources/static
+docs
+e2e
+.github
+render.yaml

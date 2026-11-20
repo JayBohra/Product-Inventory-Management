@@ -1,6 +1,8 @@
 spring:
   application:
     name: sharelist
+  # Override with SPRING_DATASOURCE_URL/USERNAME/PASSWORD, or a single DATABASE_URL
+  # (postgres://user:password@host:5432/db) as hosting platforms provide it.
   datasource:
     url: jdbc:postgresql://localhost:5432/sharelist
     username: sharelist
@@ -25,6 +27,8 @@ spring:
     timeout-per-shutdown-phase: 10s
 
 server:
+  # Hosting platforms such as Render tell the app which port to listen on.
+  port: ${PORT:8080}
   shutdown: graceful
   # Respect X-Forwarded-* headers when running behind a reverse proxy / load balancer.
   forward-headers-strategy: framework

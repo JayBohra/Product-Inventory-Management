@@ -90,6 +90,35 @@ Point it elsewhere with environment variables (see below).
 > clipboard and the native share sheet need HTTPS (or localhost), so deploy behind TLS for
 > real use.
 
+## Free hosting on Render
+
+The repo includes a [Render Blueprint](render.yaml) that creates a **free web service** (built
+from the Dockerfile) and a **free PostgreSQL database**, already wired together. Render's free
+plan needs no credit card. Don't add a payment method: then Render has nothing to charge, and if
+a free limit is ever reached the service is paused instead of billed.
+
+1. Go to <https://dashboard.render.com> and sign up with your GitHub account.
+2. Click **New → Blueprint**, connect this repository (allow Render to access it), and choose
+   the branch to deploy.
+3. Render shows the `sharelist` web service and the `sharelist-db` database, both on the
+   **Free** plan. Click **Deploy Blueprint**.
+4. The first build takes roughly 5–10 minutes. The app is then live at
+   `https://sharelist-….onrender.com` (shown on the service page), with HTTPS. Every push to
+   that branch redeploys it automatically.
+
+What to expect on the free plan:
+
+- **The app sleeps after 15 minutes without visitors.** The next visit wakes it up, which takes
+  about a minute. The Docker image is tuned for this: it starts in about 40 seconds on a free
+  instance (0.1 CPU, 512 MB) instead of about 3 minutes, and uses about 200 MB of memory.
+- **The free database expires 30 days after it is created**, and a workspace can have only one
+  free database at a time. That's fine for trying an app for a few days. For a longer-lived
+  database, or a second app at the same time, create a free project at [Neon](https://neon.tech)
+  (also no card) and set the web service's `DATABASE_URL` environment variable to its
+  connection string.
+- To host closer to your users, change `region` for both entries in `render.yaml` (`oregon`,
+  `ohio`, `virginia`, `frankfurt` or `singapore`) before creating the Blueprint.
+
 ## Tests
 
 ```bash
@@ -109,8 +138,10 @@ Spring Boot maps environment variables onto settings, e.g. `SPRING_DATASOURCE_UR
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/sharelist` | Database URL |
+| `DATABASE_URL` | *(unset)* | One-line database setting as hosting platforms provide it: `postgres://user:password@host:5432/database` |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/sharelist` | Database URL (takes precedence over `DATABASE_URL`) |
 | `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD` | `sharelist` / `sharelist` | Database credentials |
+| `PORT` | `8080` | Port to listen on (set automatically by Render and similar hosts) |
 | `APP_LIMITS_MAX_ITEMS_PER_LIST` | `200` | Items per list |
 | `APP_LIMITS_MAX_PARTICIPANTS_PER_LIST` | `500` | People per list |
 | `APP_REALTIME_EMITTER_TIMEOUT` | `15m` | Event streams are recycled after this; browsers reconnect automatically |

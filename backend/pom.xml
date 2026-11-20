@@ -78,6 +78,19 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <!--
+                        Generates the bean wiring at build time. The app uses it when started with
+                        -Dspring.aot.enabled=true (as the Docker image does), which speeds up startup
+                        on small machines such as free hosting tiers.
+                    -->
+                    <execution>
+                        <id>process-aot</id>
+                        <goals>
+                            <goal>process-aot</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

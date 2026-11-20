@@ -1,0 +1,28 @@
+# Render Blueprint: one free web service (built from the Dockerfile) and one free PostgreSQL.
+# Deploy it from the Render dashboard: New → Blueprint → pick this repository. See README.
+#
+# Free plan, no credit card. Pick the region closest to your users and keep both entries the
+# same: oregon, ohio, virginia, frankfurt or singapore.
+services:
+  - type: web
+    name: sharelist
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health/readiness
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sharelist-db
+          property: connectionString
+
+databases:
+  - name: sharelist-db
+    plan: free
+    region: oregon
+    databaseName: sharelist
+    user: sharelist
+    # Only the web service (over Render's private network) can reach the database.
+    ipAllowList: []
