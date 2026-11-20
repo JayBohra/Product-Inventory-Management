@@ -1,0 +1,238 @@
+<div class="container">
+  @switch (store.status()) {
+    @case ('loading') {
+      <div class="skeleton" aria-busy="true" aria-label="Loading list">
+        <div class="sk sk-title"></div>
+        <div class="sk sk-line"></div>
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="sk sk-row"></div>
+        }
+      </div>
+    }
+    @case ('not-found') {
+      <div class="empty-state">
+        <span class="emoji" aria-hidden="true">🔍</span>
+        <h1>List not found</h1>
+        <p class="muted">Check the link, or ask the host to send it again.</p>
+        <a routerLink="/new" class="btn btn-primary">Create your own list</a>
+      </div>
+    }
+    @case ('deleted') {
+      <div class="empty-state">
+        <span class="emoji" aria-hidden="true">🗑️</span>
+        <h1>This list was deleted</h1>
+        <p class="muted">The host removed it, along with everyone's picks.</p>
+        <a routerLink="/" class="btn btn-primary">Go home</a>
+      </div>
+    }
+    @case ('error') {
+      <div class="empty-state">
+        <span class="emoji" aria-hidden="true">📡</span>
+        <h1>Couldn't load the list</h1>
+        <p class="muted">Check your connection and try again.</p>
+        <button type="button" class="btn btn-primary" (click)="retry()">Try again</button>
+      </div>
+    }
+    @default {
+      @if (store.view(); as view) {
+        <header class="list-head">
+          <div class="head-meta">
+            <span class="live" [class]="'live ' + store.connection()" role="status">
+              <span class="dot" aria-hidden="true"></span>
+              @switch (store.connection()) {
+                @case ('live') { Live }
+                @case ('connecting') { Connecting… }
+                @case ('offline') { Offline — retrying }
+              }
+            </span>
+            <span class="muted small">Hosted by {{ view.hostName }}</span>
+          </div>
+          <div class="head-actions">
+            <button type="button" class="btn btn-primary share-btn" (click)="openShare()">
+              <app-icon name="share" [size]="18" /> Share
+            </button>
+            @if (store.isHost()) {
+              <button
+                type="button"
+                class="btn btn-icon"
+                (click)="openSettings()"
+                aria-label="List settings"
+                title="List settings"
+              >
+                <app-icon name="settings" />
+              </button>
+            }
+          </div>
+          <div class="head-body">
+            <h1>{{ view.title }}</h1>
+            @if (view.description) {
+              <p class="description">{{ view.description }}</p>
+            }
+            @if (rules().length) {
+              <ul class="chips rules" aria-label="Rules">
+                @for (rule of rules(); track rule) {
+                  <li class="chip">{{ rule }}</li>
+                }
+              </ul>
+            }
+          </div>
+        </header>
+
+        @if (view.closed) {
+          <div class="banner" role="status">
+            <app-icon name="lock" [size]="18" />
+            <span>
+              @if (store.isHost()) {
+                The list is closed — picks are frozen. Reopen it in settings.
+              } @else {
+                {{ view.hostName }} closed this list, so picks can't be changed right now.
+              }
+            </span>
+          </div>
+        }
+
+        @if (!store.joined()) {
+          <app-join-card [hostName]="view.hostName" [closed]="view.closed" />
+        }
+
+        <div class="layout">
+          <section class="main-col" aria-label="Items">
+            @if (store.isHost()) {
+              <div class="tabs" role="tablist" aria-label="View">
+                <button
+                  type="button"
+                  role="tab"
+                  class="tab"
+                  [attr.aria-selected]="tab() === 'items'"
+                  (click)="tab.set('items')"
+                >
+                  <app-icon name="list" [size]="18" /> Items
+                  <span class="badge">{{ view.items.length }}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  class="tab"
+                  [attr.aria-selected]="tab() === 'people'"
+                  (click)="tab.set('people')"
+                >
+                  <app-icon name="users" [size]="18" /> People
+                  <span class="badge">{{ view.participantCount }}</span>
+                </button>
+              </div>
+            }
+
+            @if (tab() === 'items' || !store.isHost()) {
+              <ul class="items">
+                @for (item of store.items(); track item.id) {
+                  <li>
+                    @if (editingId() === item.id) {
+                      <app-item-editor [item]="item" (done)="editingId.set(null)" />
+                    } @else {
+                      <app-item-row
+                        [item]="item"
+                        [multiple]="view.settings.allowMultiplePerItem"
+                        [editable]="store.isHost()"
+                        (edit)="editingId.set(item.id)"
+                      />
+                    }
+                  </li>
+                } @empty {
+                  <li class="no-items muted">
+                    {{ store.isHost() ? 'Add your first item below.' : 'No items yet.' }}
+                  </li>
+                }
+              </ul>
+              @if (store.isHost()) {
+                <app-item-editor class="add-editor" />
+              }
+            } @else {
+              <app-people-panel />
+            }
+          </section>
+
+          <aside class="side-col" aria-label="Sharing and your picks">
+            @if (store.me(); as me) {
+              <section class="card card-pad mine">
+                <div class="mine-head">
+                  <h2>Your picks</h2>
+                  <span class="total">{{ store.myTotal() }}</span>
+                </div>
+                @if (myPicks().length) {
+                  <ul class="pick-list">
+                    @for (pick of myPicks(); track pick.id) {
+                      <li>
+                        <span>{{ pick.name }}</span>
+                        <strong>×{{ pick.quantity }}</strong>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="muted small">Nothing yet — tap + on what you'd like.</p>
+                }
+                @if (remainingText(); as text) {
+                  <p class="small" [class.limit-hit]="store.myRemaining() === 0">{{ text }}</p>
+                }
+                <div class="me-actions">
+                  <span class="small muted">You're <strong>{{ me.name }}</strong></span>
+                  <span class="spacer"></span>
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="rename()">
+                    <app-icon name="edit" [size]="16" /> Rename
+                  </button>
+                  @if (!me.host) {
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="leave()">
+                      <app-icon name="logout" [size]="16" /> Leave
+                    </button>
+                  }
+                </div>
+              </section>
+            }
+
+            <section class="card card-pad invite">
+              <h2>Invite people</h2>
+              <div class="invite-body">
+                <button type="button" class="qr-button" (click)="openShare()" aria-label="Show QR code">
+                  <app-qr-code [value]="shareLink()" [label]="'QR code for ' + view.title" />
+                </button>
+                <div class="invite-actions">
+                  <a class="btn btn-whatsapp btn-sm" [href]="whatsapp()" target="_blank" rel="noopener">
+                    <app-icon name="whatsapp" [size]="18" /> WhatsApp
+                  </a>
+                  <button type="button" class="btn btn-sm" (click)="copyLink()">
+                    <app-icon name="copy" [size]="16" /> Copy link
+                  </button>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+
+        @if (store.me()) {
+          <div class="my-bar" role="region" aria-label="Your picks summary">
+            <div class="my-bar-inner">
+              <div class="my-bar-text">
+                <strong>{{ store.myTotal() }} picked</strong>
+                @if (remainingText(); as text) {
+                  <span class="small" [class.limit-hit]="store.myRemaining() === 0">{{ text }}</span>
+                }
+              </div>
+              <a class="btn btn-whatsapp btn-sm" [href]="whatsapp()" target="_blank" rel="noopener">
+                <app-icon name="whatsapp" [size]="18" /> Invite
+              </a>
+            </div>
+          </div>
+        }
+
+        <app-share-dialog
+          [slug]="view.slug"
+          [title]="view.title"
+          [token]="store.token()"
+          [isHost]="store.isHost()"
+        />
+        @if (store.isHost()) {
+          <app-settings-dialog />
+        }
+      }
+    }
+  }
+</div>

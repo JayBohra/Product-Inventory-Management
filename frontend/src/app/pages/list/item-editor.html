@@ -1,0 +1,78 @@
+<form [formRoot]="itemForm" class="editor" [class.editing]="editing()">
+  @if (editing()) {
+    <p class="editor-title small">Edit item</p>
+  }
+  <div class="fields">
+    <input
+      class="input name"
+      [formField]="itemForm.name"
+      [placeholder]="editing() ? 'Item name' : 'Add an item…'"
+      aria-label="Item name"
+      autocomplete="off"
+      enterkeyhint="done"
+    />
+    <input
+      class="input qty"
+      type="number"
+      inputmode="numeric"
+      [formField]="itemForm.limit"
+      placeholder="No limit"
+      aria-label="Quantity available (empty for no limit)"
+    />
+    @if (!editing()) {
+      <button type="submit" class="btn btn-primary add" [disabled]="busy()">
+        <app-icon name="plus" /> <span class="add-label">Add</span>
+      </button>
+    }
+  </div>
+
+  @if (editing()) {
+    <input
+      class="input"
+      [formField]="itemForm.note"
+      placeholder="Note (optional), e.g. contains nuts"
+      aria-label="Note"
+    />
+  }
+
+  @if (error(); as message) {
+    <p class="error-text">{{ message }}</p>
+  }
+
+  @if (editing()) {
+    <div class="actions">
+      <div class="left">
+        <button
+          type="button"
+          class="btn btn-ghost btn-icon btn-sm"
+          (click)="move(-1)"
+          [disabled]="busy() || index() <= 0"
+          aria-label="Move up"
+        >
+          <app-icon name="up" [size]="18" />
+        </button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-icon btn-sm"
+          (click)="move(1)"
+          [disabled]="busy() || index() >= count() - 1"
+          aria-label="Move down"
+        >
+          <app-icon name="down" [size]="18" />
+        </button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm danger"
+          (click)="remove()"
+          [disabled]="busy()"
+        >
+          <app-icon name="trash" [size]="18" /> Remove
+        </button>
+      </div>
+      <div class="right">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="done.emit()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="busy()">Save</button>
+      </div>
+    </div>
+  }
+</form>

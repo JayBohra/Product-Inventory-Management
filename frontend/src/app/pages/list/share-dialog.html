@@ -1,0 +1,70 @@
+<dialog #dialog class="sheet" aria-labelledby="share-title" (click)="onDialogClick($event)">
+  <div class="sheet-header">
+    <h2 id="share-title">Invite people</h2>
+    <button type="button" class="btn btn-ghost btn-icon" (click)="close()" aria-label="Close">
+      <app-icon name="x" />
+    </button>
+  </div>
+
+  <div class="sheet-body">
+    <a class="btn btn-whatsapp btn-block big" [href]="whatsapp()" target="_blank" rel="noopener">
+      <app-icon name="whatsapp" [size]="22" /> Share on WhatsApp
+    </a>
+
+    <div class="field">
+      <label class="label" for="share-link">Link to the list</label>
+      <div class="link-row">
+        <input
+          id="share-link"
+          class="input"
+          readonly
+          [value]="url()"
+          (focus)="$any($event.target).select()"
+        />
+        <button type="button" class="btn" (click)="copy(url(), 'Link')">
+          <app-icon name="copy" [size]="18" /> Copy
+        </button>
+      </div>
+    </div>
+
+    <div class="qr-block">
+      <div class="qr-frame">
+        <app-qr-code [value]="url()" [label]="'QR code for ' + title()" />
+      </div>
+      <div class="qr-text">
+        <h3>Scan to open</h3>
+        <p class="muted small">
+          Show this on your screen, or save it and send the picture to a group.
+        </p>
+        <button type="button" class="btn btn-sm" (click)="downloadQr()">
+          <app-icon name="download" [size]="18" /> Save QR image
+        </button>
+      </div>
+    </div>
+
+    @if (canShare) {
+      <button type="button" class="btn btn-block" (click)="shareNative()">
+        <app-icon name="share" [size]="18" /> More ways to share
+      </button>
+    }
+
+    @if (privateUrl(); as link) {
+      <details class="private">
+        <summary>
+          <app-icon name="lock" [size]="16" />
+          {{ isHost() ? 'Manage this list from another device' : 'Open your picks on another device' }}
+        </summary>
+        <p class="muted small">
+          This link signs in as you{{ isHost() ? ', with host rights' : '' }}. Keep it to yourself —
+          don't post it in a group.
+        </p>
+        <div class="link-row">
+          <input class="input" readonly [value]="link" aria-label="Your private link" (focus)="$any($event.target).select()" />
+          <button type="button" class="btn" (click)="copy(link, 'Private link')">
+            <app-icon name="copy" [size]="18" /> Copy
+          </button>
+        </div>
+      </details>
+    }
+  </div>
+</dialog>

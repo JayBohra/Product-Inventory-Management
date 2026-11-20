@@ -1,0 +1,105 @@
+<div class="container">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow"><app-icon name="sparkle" [size]="16" /> Real-time group lists</p>
+      <h1>Make a list. Share it. <span class="accent">Watch everyone pick.</span></h1>
+      <p class="lead">
+        Ice cream orders, potluck dishes, gift ideas, team kit — create a list, set how many of
+        each item there are, and send it on WhatsApp. Everyone sees what's left, live.
+      </p>
+      <div class="hero-actions">
+        <a routerLink="/new" class="btn btn-primary btn-lg">
+          <app-icon name="plus" /> Create a list
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-demo card" aria-hidden="true">
+      <div class="demo-head">
+        <strong>Ice cream order</strong>
+        <span class="live"><span class="dot"></span> Live</span>
+      </div>
+      <div class="demo-row">
+        <div>
+          <div class="demo-name">Vanilla</div>
+          <span class="badge badge-warning">Only 1 left</span>
+        </div>
+        <div class="demo-stepper"><span>−</span><b>1</b><span>+</span></div>
+      </div>
+      <div class="demo-row">
+        <div>
+          <div class="demo-name">Chocolate</div>
+          <span class="badge">3 picked</span>
+        </div>
+        <div class="demo-stepper"><span>−</span><b>0</b><span>+</span></div>
+      </div>
+      <div class="demo-row sold">
+        <div>
+          <div class="demo-name">Mango sorbet</div>
+          <span class="badge badge-danger">All taken</span>
+        </div>
+        <div class="demo-stepper"><span>−</span><b>0</b><span>+</span></div>
+      </div>
+    </div>
+  </section>
+
+  @if (identity.recent().length) {
+    <section class="section" aria-labelledby="your-lists">
+      <h2 id="your-lists">Your lists</h2>
+      <ul class="my-lists">
+        @for (list of identity.recent(); track list.slug) {
+          <li>
+            <a class="my-list card" [routerLink]="['/l', list.slug]">
+              <span class="my-list-icon" [class.host]="list.host">
+                <app-icon [name]="list.host ? 'list' : 'check'" />
+              </span>
+              <span class="my-list-text">
+                <strong>{{ list.title ?? 'Untitled list' }}</strong>
+                <span class="small muted">
+                  {{ list.host ? 'You host this list' : 'Joined as ' + (list.name ?? 'guest') }}
+                </span>
+              </span>
+              <button
+                type="button"
+                class="btn btn-ghost btn-icon btn-sm"
+                (click)="forget(list.slug, list.title, $event)"
+                [attr.aria-label]="'Remove ' + (list.title ?? 'list') + ' from this device'"
+              >
+                <app-icon name="x" [size]="18" />
+              </button>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  <section class="section" aria-labelledby="how">
+    <h2 id="how">How it works</h2>
+    <ol class="steps">
+      <li class="card card-pad">
+        <span class="step-num">1</span>
+        <h3>Create your list</h3>
+        <p class="muted">
+          Add items and, if you like, how many of each there are. Choose how many things each
+          person can pick.
+        </p>
+      </li>
+      <li class="card card-pad">
+        <span class="step-num">2</span>
+        <h3>Share the link</h3>
+        <p class="muted">
+          Send it straight to WhatsApp, or show the QR code. No sign-up — people just enter their
+          name.
+        </p>
+      </li>
+      <li class="card card-pad">
+        <span class="step-num">3</span>
+        <h3>Watch picks roll in</h3>
+        <p class="muted">
+          Counts update live for everyone. When something runs out, it's disabled automatically.
+        </p>
+      </li>
+    </ol>
+  </section>
+</div>
