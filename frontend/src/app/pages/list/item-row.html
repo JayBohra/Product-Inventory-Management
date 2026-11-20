@@ -1,0 +1,95 @@
+@let it = item();
+<div
+  class="row"
+  [class.sold-out]="soldOut()"
+  [class.mine]="it.quantity > 0"
+  [class.flash]="it.flash"
+>
+  <div class="info">
+    <div class="name-line">
+      <h3 class="name">{{ it.name }}</h3>
+      @if (it.quantity > 0) {
+        <span class="badge badge-primary mine-badge">
+          <app-icon name="check" [size]="13" />
+          @if (multiple()) {
+            You: {{ it.quantity }}
+          } @else {
+            Yours
+          }
+        </span>
+      }
+    </div>
+    @if (it.note) {
+      <p class="note">{{ it.note }}</p>
+    }
+    <div class="meta">
+      <span
+        class="badge"
+        [class.badge-success]="tone() === 'ok'"
+        [class.badge-warning]="tone() === 'low'"
+        [class.badge-danger]="tone() === 'out'"
+      >
+        {{ availability() }}
+      </span>
+      @if (claimants(); as names) {
+        <span class="claimants" [title]="names">{{ names }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="controls">
+    @if (multiple()) {
+      <div class="stepper" [class.active]="it.quantity > 0">
+        <button
+          type="button"
+          class="step"
+          (click)="store.decrement(it)"
+          [disabled]="!it.canRemove"
+          [attr.aria-label]="'Remove one ' + it.name"
+        >
+          <app-icon name="minus" />
+        </button>
+        <span class="count" aria-live="polite" [attr.aria-label]="'You picked ' + it.quantity + ' ' + it.name">
+          {{ it.quantity }}
+        </span>
+        <button
+          type="button"
+          class="step plus"
+          (click)="store.increment(it)"
+          [disabled]="!it.canAdd"
+          [attr.aria-label]="'Add one ' + it.name"
+          [title]="it.blockedReason ?? ''"
+        >
+          <app-icon name="plus" />
+        </button>
+      </div>
+    } @else {
+      <button
+        type="button"
+        class="pick"
+        [class.picked]="it.quantity > 0"
+        (click)="store.toggle(it)"
+        [disabled]="it.quantity > 0 ? !it.canRemove : !it.canAdd"
+        [attr.aria-pressed]="it.quantity > 0"
+        [title]="it.quantity > 0 ? 'Tap to give it back' : (it.blockedReason ?? '')"
+      >
+        @if (it.quantity > 0) {
+          <app-icon name="check" [size]="18" /> Picked
+        } @else {
+          Pick
+        }
+      </button>
+    }
+
+    @if (editable()) {
+      <button
+        type="button"
+        class="btn btn-ghost btn-icon btn-sm edit"
+        (click)="edit.emit()"
+        [attr.aria-label]="'Edit ' + it.name"
+      >
+        <app-icon name="edit" [size]="18" />
+      </button>
+    }
+  </div>
+</div>

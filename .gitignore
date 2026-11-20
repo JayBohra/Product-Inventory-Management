@@ -1,0 +1,19 @@
+# Backend
+backend/target/
+backend/src/main/resources/static/
+*.class
+
+# Frontend (see also frontend/.gitignore)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDEs and OS files
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local environment
+.env
+*.log

@@ -1,0 +1,37 @@
+# Runs the whole app: PostgreSQL + the Spring Boot server (which also serves the Angular UI).
+#   docker compose up --build      → http://localhost:8080
+#   docker compose up db           → just the database, for local development
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: sharelist
+      POSTGRES_USER: sharelist
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sharelist}
+    ports:
+      - "5432:5432"
+    volumes:
+      # PostgreSQL 18 images keep their data under /var/lib/postgresql/<version>/
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sharelist -d sharelist"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sharelist
+      SPRING_DATASOURCE_USERNAME: sharelist
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-sharelist}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  db-data:

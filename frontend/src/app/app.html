@@ -1,0 +1,22 @@
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a routerLink="/" class="brand" aria-label="ShareList home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+          stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12.5l4.5 4.5L20 6" />
+        </svg>
+      </span>
+      <span class="brand-name">ShareList</span>
+    </a>
+    <a routerLink="/new" class="btn btn-sm btn-soft">New list</a>
+  </div>
+</header>
+
+<main id="main">
+  <router-outlet />
+</main>
+
+<app-toast-outlet />

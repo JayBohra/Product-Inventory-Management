@@ -1,0 +1,10 @@
+{
+  "name": "ShareList",
+  "short_name": "ShareList",
+  "description": "Make a list, share it on WhatsApp and watch everyone pick in real time.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5fa",
+  "theme_color": "#4f46e5",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

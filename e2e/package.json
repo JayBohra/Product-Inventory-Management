@@ -1,0 +1,11 @@
+{
+  "name": "sharelist-e2e",
+  "private": true,
+  "description": "Browser smoke tests: several people on different devices using one list at the same time.",
+  "scripts": {
+    "test": "node ice-cream.js && node more-flows.js"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

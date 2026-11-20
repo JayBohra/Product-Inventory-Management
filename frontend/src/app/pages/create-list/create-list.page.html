@@ -1,0 +1,199 @@
+<div class="container narrow">
+  <header class="page-head">
+    <a routerLink="/" class="back small">← Back</a>
+    <h1>New list</h1>
+    <p class="muted">Add what people can choose from. You can change everything later.</p>
+  </header>
+
+  <form [formRoot]="draftForm" class="create-form">
+    <section class="card card-pad group" aria-labelledby="about-heading">
+      <h2 id="about-heading">About the list</h2>
+
+      <div class="field">
+        <label class="label" for="title">List name</label>
+        <input
+          id="title"
+          class="input"
+          [formField]="draftForm.title"
+          placeholder="e.g. Ice cream order"
+          autocomplete="off"
+          [attr.aria-invalid]="!!firstError(draftForm.title)"
+        />
+        @if (firstError(draftForm.title); as error) {
+          <p class="error-text">{{ error }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="description">
+          Description <span class="faint">(optional)</span>
+        </label>
+        <textarea
+          id="description"
+          class="input"
+          rows="2"
+          [formField]="draftForm.description"
+          placeholder="e.g. Friday treat for the team — pick by 3pm!"
+        ></textarea>
+        @if (firstError(draftForm.description); as error) {
+          <p class="error-text">{{ error }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="host-name">Your name</label>
+        <input
+          id="host-name"
+          class="input"
+          [formField]="draftForm.hostName"
+          placeholder="So people know who's hosting"
+          autocomplete="given-name"
+          [attr.aria-invalid]="!!firstError(draftForm.hostName)"
+        />
+        @if (firstError(draftForm.hostName); as error) {
+          <p class="error-text">{{ error }}</p>
+        }
+      </div>
+    </section>
+
+    <section class="card card-pad group" aria-labelledby="items-heading">
+      <div class="group-head">
+        <h2 id="items-heading">Items</h2>
+        <span class="badge">{{ namedItems() }}</span>
+      </div>
+      <p class="hint">
+        Set a quantity to limit how many of an item there are in total — leave it empty for
+        unlimited. Tip: paste several lines at once to add many items.
+      </p>
+
+      <div class="item-grid" role="list">
+        <div class="item-grid-head" aria-hidden="true">
+          <span>Item</span>
+          <span>Quantity</span>
+          <span></span>
+        </div>
+        @for (item of draftForm.items; track item; let i = $index) {
+          <div class="item-line" role="listitem">
+            <div class="cell">
+              <input
+                class="input item-name"
+                [formField]="item.name"
+                [placeholder]="i === 0 ? 'e.g. Vanilla' : i === 1 ? 'e.g. Chocolate' : 'Add an item'"
+                [attr.aria-label]="'Item ' + (i + 1)"
+                [attr.aria-invalid]="!!firstError(item.name)"
+                autocomplete="off"
+                enterkeyhint="next"
+                (keydown.enter)="onItemEnter($event, i)"
+                (paste)="onItemPaste($event, i)"
+              />
+              @if (firstError(item.name); as error) {
+                <p class="error-text">{{ error }}</p>
+              }
+            </div>
+            <div class="cell">
+              <input
+                class="input qty"
+                type="number"
+                inputmode="numeric"
+                [formField]="item.limit"
+                placeholder="No limit"
+                [attr.aria-label]="'Quantity available for item ' + (i + 1)"
+                [attr.aria-invalid]="!!firstError(item.limit)"
+              />
+              @if (firstError(item.limit); as error) {
+                <p class="error-text">{{ error }}</p>
+              }
+            </div>
+            <button
+              type="button"
+              class="btn btn-ghost btn-icon remove"
+              (click)="removeItem(i)"
+              [attr.aria-label]="'Remove item ' + (i + 1)"
+            >
+              <app-icon name="x" />
+            </button>
+          </div>
+        }
+      </div>
+
+      @if (firstError(draftForm.items); as error) {
+        <p class="error-text items-error">{{ error }}</p>
+      }
+
+      <button type="button" class="btn btn-soft add-item" (click)="addItem()">
+        <app-icon name="plus" /> Add item
+      </button>
+    </section>
+
+    <section class="card card-pad group" aria-labelledby="rules-heading">
+      <h2 id="rules-heading">Rules</h2>
+
+      <div class="switches">
+        <label class="switch-row">
+          <span class="switch-text">
+            <strong>Allow more than one of the same item</strong>
+            <span class="hint">People get + and − buttons. Turn off for a simple tick list.</span>
+          </span>
+          <input type="checkbox" class="switch" [formField]="draftForm.allowMultiple" />
+        </label>
+
+        <div class="switch-row per-person">
+          <span class="switch-text">
+            <strong id="per-person-label">Max items per person</strong>
+            <span class="hint">Counted across the whole list.</span>
+          </span>
+          <div class="per-person-controls">
+            <div class="segmented" role="radiogroup" aria-labelledby="per-person-label">
+              <label>
+                <input type="radio" value="none" [formField]="draftForm.perPerson" />
+                <span>No limit</span>
+              </label>
+              <label>
+                <input type="radio" value="one" [formField]="draftForm.perPerson" />
+                <span>1</span>
+              </label>
+              <label>
+                <input type="radio" value="custom" [formField]="draftForm.perPerson" />
+                <span>Custom</span>
+              </label>
+            </div>
+            @if (model().perPerson === 'custom') {
+              <div class="custom-limit">
+                <input
+                  class="input"
+                  type="number"
+                  inputmode="numeric"
+                  [formField]="draftForm.customLimit"
+                  aria-label="Max items per person"
+                  [attr.aria-invalid]="!!firstError(draftForm.customLimit)"
+                />
+                <span class="muted small">items each</span>
+              </div>
+              @if (firstError(draftForm.customLimit); as error) {
+                <p class="error-text">{{ error }}</p>
+              }
+            }
+          </div>
+        </div>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <strong>Everyone can see who picked what</strong>
+            <span class="hint">As the host you always can.</span>
+          </span>
+          <input type="checkbox" class="switch" [formField]="draftForm.showClaimants" />
+        </label>
+      </div>
+    </section>
+
+    <div class="submit-bar">
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="draftForm().submitting()">
+        @if (draftForm().submitting()) {
+          Creating…
+        } @else {
+          Create list & share
+        }
+      </button>
+    </div>
+  </form>
+</div>

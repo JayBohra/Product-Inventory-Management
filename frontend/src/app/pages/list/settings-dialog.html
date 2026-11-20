@@ -1,0 +1,114 @@
+<dialog #dialog class="sheet" aria-labelledby="settings-title" (click)="onDialogClick($event)">
+  <form [formRoot]="settingsForm">
+    <div class="sheet-header">
+      <h2 id="settings-title">List settings</h2>
+      <button type="button" class="btn btn-ghost btn-icon" (click)="close()" aria-label="Close">
+        <app-icon name="x" />
+      </button>
+    </div>
+
+    <div class="sheet-body">
+      <div class="field">
+        <label class="label" for="settings-title-input">List name</label>
+        <input id="settings-title-input" class="input" [formField]="settingsForm.title" />
+        @if (firstError('title'); as error) {
+          <p class="error-text">{{ error }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="settings-description">
+          Description <span class="faint">(optional)</span>
+        </label>
+        <textarea
+          id="settings-description"
+          class="input"
+          rows="2"
+          [formField]="settingsForm.description"
+        ></textarea>
+        @if (firstError('description'); as error) {
+          <p class="error-text">{{ error }}</p>
+        }
+      </div>
+
+      <div class="switches">
+        <label class="switch-row">
+          <span class="switch-text">
+            <strong>Allow more than one of the same item</strong>
+            <span class="hint">People who already have more keep them.</span>
+          </span>
+          <input type="checkbox" class="switch" [formField]="settingsForm.allowMultiple" />
+        </label>
+
+        <div class="switch-row per-person">
+          <span class="switch-text">
+            <strong id="settings-per-person">Max items per person</strong>
+            <span class="hint">Counted across the whole list.</span>
+          </span>
+          <div>
+            <div class="segmented" role="radiogroup" aria-labelledby="settings-per-person">
+              <label>
+                <input type="radio" value="none" [formField]="settingsForm.perPerson" />
+                <span>No limit</span>
+              </label>
+              <label>
+                <input type="radio" value="one" [formField]="settingsForm.perPerson" />
+                <span>1</span>
+              </label>
+              <label>
+                <input type="radio" value="custom" [formField]="settingsForm.perPerson" />
+                <span>Custom</span>
+              </label>
+            </div>
+            @if (model().perPerson === 'custom') {
+              <div class="custom-limit">
+                <input
+                  class="input"
+                  type="number"
+                  inputmode="numeric"
+                  [formField]="settingsForm.customLimit"
+                  aria-label="Max items per person"
+                />
+                <span class="muted small">items each</span>
+              </div>
+              @if (firstError('customLimit'); as error) {
+                <p class="error-text">{{ error }}</p>
+              }
+            }
+          </div>
+        </div>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <strong>Everyone can see who picked what</strong>
+            <span class="hint">Off: people only see what's left, and their own picks.</span>
+          </span>
+          <input type="checkbox" class="switch" [formField]="settingsForm.showClaimants" />
+        </label>
+
+        <label class="switch-row">
+          <span class="switch-text">
+            <strong>Close the list</strong>
+            <span class="hint">Freezes all picks. Nobody can join or change anything until you reopen it.</span>
+          </span>
+          <input type="checkbox" class="switch" [formField]="settingsForm.closed" />
+        </label>
+      </div>
+
+      <div class="danger-zone">
+        <strong>Delete list</strong>
+        <p class="small muted">Removes the list and everyone's picks for good.</p>
+        <button type="button" class="btn btn-danger btn-sm" (click)="deleteList()">
+          <app-icon name="trash" [size]="18" /> Delete list
+        </button>
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <button type="button" class="btn btn-ghost" (click)="close()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="settingsForm().submitting()">
+        Save
+      </button>
+    </div>
+  </form>
+</dialog>
